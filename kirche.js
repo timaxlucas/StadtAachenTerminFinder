@@ -43,7 +43,7 @@ async function notifyMobilePhone(message) {
   });
 
   if (elements.length !== 1) {
-    console.log("no success")
+    await notifyMobilePhone(`Kein Termin gefunden`)
   } else {
     await notifyMobilePhone(`Termin gefunden!`)
   }
