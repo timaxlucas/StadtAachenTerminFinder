@@ -26,27 +26,31 @@ async function notifyMobilePhone(message) {
 }
 
 (async () => {
-  const browser = await puppeteer.launch({ headless: true, args: ['--no-sandbox'], });
-  const page = await browser.newPage();
-  await page.goto(START_URL, {
-    waitUntil: 'networkidle2',
-  });
-
-  await page.select('#citizen_court', '40');
-  await page.waitForTimeout(200);
-  await page.select('#citizen_legalService', '12');
-  await page.waitForTimeout(200);
-  await page.click('#select_court_legalService')
-
-  const elements = await page.$$eval('.no-appointments-header', elements => {
-    return elements.map(element => element.textContent);
-  });
-
-  if (elements.length !== 1) {
-    await notifyMobilePhone(`Kein Termin gefunden`)
-  } else {
-    await notifyMobilePhone(`Termin gefunden!`)
+  try {
+    const browser = await puppeteer.launch({ headless: true, args: ['--no-sandbox'], });
+    const page = await browser.newPage();
+    await page.goto(START_URL, {
+      waitUntil: 'networkidle2',
+    });
+  
+    await page.select('#citizen_court', '40');
+    await page.waitForTimeout(200);
+    await page.select('#citizen_legalService', '12');
+    await page.waitForTimeout(200);
+    await page.click('#select_court_legalService')
+  
+    const elements = await page.$$eval('.no-appointments-header', elements => {
+      return elements.map(element => element.textContent);
+    });
+  
+    if (elements.length !== 1) {
+      await notifyMobilePhone(`Kein Termin gefunden`)
+    } else {
+      await notifyMobilePhone(`Termin gefunden!`)
+    }
+  
+    await browser.close();
+  } catch(e) {
+    console.log(e)
   }
-
-  await browser.close();
 })();
