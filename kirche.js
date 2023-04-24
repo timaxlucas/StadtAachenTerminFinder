@@ -34,12 +34,12 @@ async function notifyMobilePhone(message) {
     });
   
     await page.select('#citizen_court', '40');
-    await page.waitForTimeout(200);
+    await page.waitForTimeout(1000);
     await page.select('#citizen_legalService', '12');
-    await page.waitForTimeout(200);
+    await page.waitForTimeout(1000);
     await page.click('#select_court_legalService')
 
-    await page.waitForTimeout(500);
+    await page.waitForTimeout(2000);
   
     const elements = await page.$$eval('.no-appointments-header', elements => {
       return elements.map(element => element.textContent);
