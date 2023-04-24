@@ -39,14 +39,14 @@ async function notifyMobilePhone(message) {
     await page.waitForTimeout(200);
     await page.click('#select_court_legalService')
 
-    await page.waitForNavigation({ waitUntil: 'networkidle2' });
+    await page.waitForTimeout(500);
   
     const elements = await page.$$eval('.no-appointments-header', elements => {
       return elements.map(element => element.textContent);
     });
   
-    if (elements.length !== 1) {
-      await notifyMobilePhone(`Kein Termin gefunden`)
+    if (elements.length === 1) {
+      await notifyMobilePhone(`Keinen Termin gefunden`)
     } else {
       await notifyMobilePhone(`Termin gefunden!`)
     }
