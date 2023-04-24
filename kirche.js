@@ -46,9 +46,9 @@ async function notifyMobilePhone(message) {
     });
   
     if (elements.length === 1) {
-      await notifyMobilePhone(`Keinen Termin gefunden`)
+      // await notifyMobilePhone(`Keinen Termin gefunden`)
     } else {
-      await notifyMobilePhone(`Termin gefunden!`)
+      await notifyMobilePhone(`Termin gefunden! ${START_URL}`)
     }
   
     await browser.close();
