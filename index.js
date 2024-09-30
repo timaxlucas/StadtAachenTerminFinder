@@ -6,10 +6,14 @@ const fetch = require('node-fetch')
 const LOCATION = 'BahnhofplatzKatschhof'
 const START_URL = `https://qtermin.de/${LOCATION}`;
 
-const SERVICE_1 = 'Ausweise / Reisepässe – Wohnsitz im Inland (ID/passport for germans)'
-const SERVICE_2 = 'Ausweis: Beantragung (Personen ab 16 Jahren)';
+// const SERVICE_1 = 'Ausweise / Reisepässe – Wohnsitz im Inland (ID/passport for germans)'
+const SERVICE_1 = 'Ausweise / Reisepässe – Wohnsitz im Ausland'
 
-const MIN_MONTH = 5; // 0: January, 1: February, etc...
+// const SERVICE_2 = 'Ausweis: Beantragung (Personen ab 16 Jahren)';
+const SERVICE_2 = 'Ausweis: Beantragung (Personen ab 16 Jahren, Wohnsitz Ausland)'
+// const SERVICE_2 = 'Ausweis: Aushändigung (Wohnsitz Ausland)'
+
+const MIN_MONTH = 9; // 0: January, 1: February, etc...
 
 const telegramToken = process.env.TELEGRAM_API_TOKEN
 const chatId = process.env.TELEGRAM_CHAT_ID
@@ -41,8 +45,8 @@ async function notifyMobilePhone(message) {
     waitUntil: 'networkidle2',
   });
 
-  const clickDivWithText = async text => {
-    let linkHandler = await page.$x(`//div[contains(text(), '${text}')]`)
+  const clickElWithText = async (elem, text) => {
+    let linkHandler = await page.$x(`//${elem}[contains(text(), '${text}')]`)
     
     if (linkHandler.length == 0) {
       return false
@@ -54,15 +58,17 @@ async function notifyMobilePhone(message) {
   }
 
   const end = async (str) => {
-    console.log(str)
+    if (str) {
+      log(str)
+    }
     await browser.close();
   }
 
-  if (!(await clickDivWithText(SERVICE_1)))  {
+  if (!(await clickElWithText('h1', SERVICE_1)))  {
     return await end(`Could not find: ${SERVICE_1}`)
   }
 
-  if (!(await clickDivWithText(SERVICE_2)))  {
+  if (!(await clickElWithText('div', SERVICE_2)))  {
     return await end(`Could not find: ${SERVICE_2}`)
   }
 
@@ -71,22 +77,27 @@ async function notifyMobilePhone(message) {
 
   try {
     const dateElement = await page.waitForSelector(".slotsHeader", { timeout: 4000 })
-    const earliestDate = await page.evaluate(el => el.textContent, dateElement)
-    const date = parse(earliestDate, 'dd.MM.yyyy', new Date())
+
+    const earliestDate = await page.evaluate(el => el.textContent, dateElement) // e.g. Montag, 07.10.2024
+    const fixedEarliestDate = earliestDate.replace(/[^0-9.]/g, '')
+    const date = parse(fixedEarliestDate, 'dd.MM.yyyy', new Date())
     const month = getMonth(date)
     if (month <= MIN_MONTH) {
       // SUCCESS
-      await notifyMobilePhone(`Termin gefunden! ${earliestDate}`)
-    } else {
-      // No success :(
-      console.log("no success")
+      return await notifyMobilePhone(`Termin gefunden! ${earliestDate}\n\n${START_URL}`)
     }
+    log('no success')
   } catch(e) {
-    await notifyMobilePhone(`Something failed: ${e}`)
-    await end("waiting for ui-datepicker exceeded")
+    log('no success')
+    await end()
   }
 
   await end()
 })();
+
+function log(text) {
+  const currentDate = new Date().toLocaleDateString('de-DE', { year: 'numeric', month: '2-digit', day: '2-digit', hour: '2-digit', minute: '2-digit' });
+  console.log(`[${currentDate}] ${text}`)
+}
 
 
