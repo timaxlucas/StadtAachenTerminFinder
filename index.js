@@ -18,9 +18,6 @@ const MIN_MONTH = 9; // 0: January, 1: February, etc...
 const telegramToken = process.env.TELEGRAM_API_TOKEN
 const chatId = process.env.TELEGRAM_CHAT_ID
 
-
-
-
 async function notifyMobilePhone(message) {
   try {
     await fetch(`https://api.telegram.org/bot${telegramToken}/sendMessage`, {
@@ -43,10 +40,11 @@ async function notifyMobilePhone(message) {
   const page = await browser.newPage();
   await page.goto(START_URL, {
     waitUntil: 'networkidle2',
+    timeout: 5000,
   });
 
   const clickElWithText = async (elem, text) => {
-    let linkHandler = await page.$x(`//${elem}[contains(text(), '${text}')]`)
+    let linkHandler = await page.$x(`//${elem}[contains(text(), '${text}')]`, { timeout: 3000 })
     
     if (linkHandler.length == 0) {
       return false
